@@ -84,7 +84,3 @@ output "aws_route_table_association_firewall" {
 output "aws_firewall_route_table_ids" {
   value = [for k, v in aws_route_table.firewall : v.id]
 }
-
-output "default_security_group_id" {
-  value = aws_default_security_group.this.id
-}

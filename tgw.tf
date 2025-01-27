@@ -50,7 +50,7 @@ resource "aws_route_table_association" "tgw" {
 
 # tgw association
 locals {
-  vpc_route_tables = concat(try(aws_route_table.private[*].id, []), try(aws_route_table.public[*].id, []))
+  vpc_route_tables = concat(try(values(aws_route_table.private)[*].id, []), try([aws_route_table.public.id], []))
 
   vpc_tgw_routes = var.tgw_id == null ? {} : merge([
     for cidr in var.tgw_static_routes : {
@@ -61,36 +61,40 @@ locals {
     }
   ]...)
 
-  #tgw_association_subnets = (length(local.tgw_subnets) > 0) ? try(aws_subnet.tgw[*].id, []) : slice(try(aws_subnet.private[*].id, []), 0, length(var.region_config.az_ids))
+  tgw_association_subnets = (length(local.tgw_subnets) > 0) ? try(values(aws_subnet.tgw)[*].id, []) : slice(try(values(aws_subnet.private)[*].id, []), 0, length(var.region_config.az_ids))
 }
 
-#module "tgw" {
-##source = "git@github.com:vantagediscovery/terraform-aws-transit-gateway//modules/tgw_vpc_attachments?ref=0.2.0"
-#source = "/Users/loganbest/code/terraform-aws-transit-gateway//modules/tgw_vpc_attachments"
+module "tgw" {
+  source = "git@github.com:vantagediscovery/terraform-aws-transit-gateway//modules/tgw_vpc_attachments?ref=0.3.0"
 
-#count = (!var.tgw_id == null) ? 1 : 0
+  count = (var.enable_tgw) ? 1 : 0
 
-#vpc_id   = aws_vpc.this.id
-#vpc_name = module.vpc.name
+  vpc_id   = aws_vpc.this.id
+  vpc_name = aws_vpc.this.tags["Name"]
 
-#tgw_association_subnets = local.tgw_association_subnets
-#tgw_id                  = var.tgw_id
+  tgw_association_subnets = local.tgw_association_subnets
+  tgw_id                  = var.tgw_id
 
-#enable_dns_support            = var.tgw_enable_dns_support
-#enable_ipv6_support           = var.tgw_enable_ipv6_support
-#enable_appliance_mode_support = var.tgw_enable_appliance_mode_support
+  enable_dns_support            = var.tgw_enable_dns_support
+  enable_ipv6_support           = var.tgw_enable_ipv6_support
+  enable_appliance_mode_support = var.tgw_enable_appliance_mode_support
 
-#tgw_association_table  = var.tgw_association_table
-#tgw_propagation_tables = var.tgw_propagation_tables
+  tgw_association_table  = var.tgw_association_table
+  tgw_propagation_tables = var.tgw_propagation_tables
 
-#tags = merge(
-#module.this.tags,
-#var.terragrunt_tags
-#)
-#}
+  providers = {
+    aws             = aws
+    aws.netsvc      = aws.netsvc
+    aws.netsvc_use2 = aws.netsvc_use2
+  }
+
+  tags = merge(
+    module.this.tags
+  )
+}
 
 resource "aws_route" "to_tgw" {
-  for_each = local.vpc_tgw_routes
+  for_each = { for k, v in local.vpc_tgw_routes : k => v if var.enable_tgw }
 
   route_table_id         = each.value.route_table_id
   transit_gateway_id     = var.tgw_id
