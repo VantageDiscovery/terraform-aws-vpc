@@ -32,6 +32,12 @@ variable "enable_network_address_usage_metrics" {
   default     = true
 }
 
+variable "enable_tgw" {
+  description = "Whether to enable Transit Gateway Networking"
+  type        = bool
+  default     = false
+}
+
 variable "tgw_static_routes" {
   description = "Static Routes to send via the Transit Gateway from the VPC"
   type        = list(string)
@@ -42,6 +48,42 @@ variable "tgw_id" {
   description = "TGW ID"
   type        = string
   default     = null
+}
+
+variable "tgw_enable_dns_support" {
+  description = "Whether to enable DNS Support for the Transit Gateway Attachment"
+  type        = bool
+  default     = true
+}
+
+variable "tgw_enable_ipv6_support" {
+  description = "Whether to enable IPv6 Support for the Transit Gateway Attachment"
+  type        = bool
+  default     = false
+}
+
+variable "tgw_enable_multicast_support" {
+  description = "Whether to enable Multicast Support for the Transit Gateway Attachment"
+  type        = bool
+  default     = false
+}
+
+variable "tgw_enable_appliance_mode_support" {
+  description = "Whether to enable Appliance Mode Support for the Transit Gateway Attachment"
+  type        = bool
+  default     = true
+}
+
+variable "tgw_association_table" {
+  description = "The TGW Route Table to associate the VPC with"
+  type        = string
+  default     = null
+}
+
+variable "tgw_propagation_tables" {
+  description = "The TGW Route Tables to propagate routes from the VPC"
+  type        = list(string)
+  default     = []
 }
 
 # SUBNETS
