@@ -65,8 +65,7 @@ locals {
 }
 
 module "tgw" {
-  #source = "git@github.com:vantagediscovery/terraform-aws-transit-gateway//modules/tgw_vpc_attachments?ref=0.2.0"
-  source = "/Users/loganbest/code/terraform-aws-transit-gateway//modules/tgw_vpc_attachments"
+  source = "git@github.com:vantagediscovery/terraform-aws-transit-gateway//modules/tgw_vpc_attachments?ref=0.3.0"
 
   count = (var.enable_tgw) ? 1 : 0
 
